@@ -1,63 +1,57 @@
 
 $(function(){
-	var $container = $('.container');
-	var WIDTH = $('.wrap').width();
-	var isComplete = true;
-
-	var $li = $('.container ul li');
-	var first = $li.first().clone();
-	var last =  $li.last().clone();
+	var index = 1,
+		$container = $('.container'),
+		$li = $(".container ul li"),
+		$maxLength = $li.length,
+		WIDTH = $('.wrap').width(),
+		$prev = $('.prev'),
+		$next = $('.next'),
+		first = $li.first().clone(),
+		last =  $li.last().clone();
+	//複製第一張圖及最後一張圖的最前面及最後面
 	first.appendTo( $('.container ul') );
 	last.prependTo( $('.container ul') );
 
-	// $.ajax({
-	// 		url: 'data',
-	// 		type: 'GET',
-	// 		dataType: 'json',
-	// 		success: function(data) {
-	// 			var dataName = data;
-	// 			var dataLength = dataName.length;
-	// 			// var i = 0;
-	// 			console.log(dataName);
-	// 			// for(i; i<dataLength; i++){
-	// 			// 	$(this).append('<img src="' + dataName[i] + '" alt="1" />');
-	// 			// }
-	// 		},
-	// 		 error: function() {
-	// 		 	console.log("error");
-	// 		}
-	// 	});
-	var index = 1;
-	var LENGTH = $li.length;
+	$container.css({
+		left: index * WIDTH * -1
+	});
 
-	// Event
-	$('.prev').on('click',{"custom":-1} , doSlide);
-	$('.next').on('click',{"custom": 1} , doSlide);
-
-	$container.css("left",-WIDTH );
-
-	function doSlide( e ){
-		if( !isComplete ){
-			return false;
+	$prev.on('click',function(){
+		if(index == 1){
+			index = index-1;
+			$container.animate({
+				left:index * -WIDTH
+			},function(){
+				$container.css({
+					left: $maxLength * -WIDTH
+				});
+				index = $maxLength;
+			})
+		}else if(index > 1){
+			index = index - 1;
+			$container.animate({
+				left:index * -WIDTH
+			})
 		}
-
-		isComplete = false;
-		if (e != null) {
-			e.preventDefault();
-			index = index + e.data.custom;
-		};
-		$container.animate({
-			left: 	index * WIDTH * -1
-		}, 350, function(){
-			if ( index == 0) {
-				index = LENGTH - 2;
-				$container.css('left', index * WIDTH * -1);
-			}else if( index == LENGTH - 1){
+	});
+	$next.on('click',function(){
+		if(index == $maxLength){
+			index = $maxLength + 1;
+			$container.animate({
+				left:index * -WIDTH
+			},function(){
+				var firstImg = index - $maxLength;
+				$container.css({
+					left: firstImg * -WIDTH
+				});
 				index = 1;
-				$container.css('left', index * WIDTH * -1);
-			}
-			$li.removeClass('on').eq(index).addClass('on');
-			isComplete = true;
-		});
-	}
+			})
+		}else if(index < $maxLength){
+			index = index + 1;
+			$container.animate({
+				left:index * -WIDTH
+			})
+		}
+	});
 });
