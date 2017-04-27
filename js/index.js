@@ -1,22 +1,83 @@
 
 $(function(){
-	var index = 1,
-		$container = $('.container'),
-		$li = $(".container ul li"),
-		$maxLength = $li.length,
+	var current = 1,
+		_container = $('.container'),
+		_li = $(".container ul li"),
+		_prev = $('.prev'),
+		_next = $('.next'),
+		maxLength = _li.length,
 		WIDTH = $('.wrap').width(),
-		$prev = $('.prev'),
-		$next = $('.next'),
-		$start = $('.start'),
-		first = $li.first().clone(),
-		last =  $li.last().clone(),
-		// ViewModel = ViewModel || {},
-		Events = Events || {},
-		init = function() {},
-		timer = {};
+		first = _li.first().clone(),
+		last =  _li.last().clone();
 	//複製第一張圖及最後一張圖的最前面及最後面
 	first.appendTo($('.container ul'));
 	last.prependTo($('.container ul'));
+
+
+	function prev(callback){
+		current = current - 1;
+		if(current == 0){
+			// $container.trigger(Events['SLIDER_ADD_COUNT']);
+			prevAnimateLast(current, callback);
+		}else if(current > 0){
+			prevAnimate(current, callback);
+		}
+	}
+	function prevAnimate(current, callback){
+		_container.animate({
+			left:current * WIDTH * -1
+		}, callback)
+	}
+
+	function prevAnimateLast(_current, callback){
+		_container.animate({
+			left:_current * WIDTH * -1
+		},function(){
+			_container.css({
+				left: maxLength * WIDTH * -1
+			});
+			current = maxLength;
+			callback();
+		})
+	}
+
+	function next(callback){
+		current = current + 1;
+		if(current == maxLength + 1){
+			nextAnimateLast(current, callback);
+		}else if(current < maxLength + 1){
+			nextAnimate(current, callback);
+		}
+	}
+
+	function nextAnimate(current, callback){
+		_container.animate({
+			left:current * WIDTH * -1
+		}, callback)
+	}
+
+	function nextAnimateLast(_current, callback){
+		_container.animate({
+			left:_current * WIDTH * -1
+		},function(){
+			var firstImg = _current - maxLength;
+			_container.css({
+				left: firstImg * WIDTH * -1
+			});
+			current = firstImg;
+			callback();
+		})
+	}
+
+	function prevAnimatComplete() {}
+
+	function nextAnimatComplete() {
+		Timer.loop(actions, 3000);
+	}
+
+	// var _onSliderAddComplete = function(e) {
+
+	// };
 
 	// var ViewContainer = {
 	// 	target: $('.container'),
@@ -49,103 +110,102 @@ $(function(){
 	// 	};
 	// })();
 
+	var Models = Models || {};
+
+	Models.Page = (function() {
+  		var _button = {},
+  			current = 1,
+  			_container = $('.container'),
+  			_li = $(".container ul li"),
+  			_prev = $('.prev'),
+			_next = $('.next'),
+			WIDTH = $('.wrap').width(),
+  			SLIDER_SHOW_MAX_LENGTH = _li.length;
+
+  		_button = {
+  			prev: function(){
+  				if(current == 0){
+					prevAnimateLast(current, callback);
+				}else if(current > 0){
+					prevAnimate(current, callback);
+				}
+  			},
+  			next: function(){
+
+  			}
+  		};
+
+  		return _button;
+
+	})();
 
 
-	function prev(callback){
-		index = index - 1;
-		if(index == 0){
-			// $container.trigger(Events['SLIDER_ADD_COUNT']);
-			prevAnimateLast(index, callback);
-		}else if(index > 0){
-			prevAnimate(index, callback);
-		}
-	}
-	function prevAnimate(index, callback){
-		$container.animate({
-				left:index * WIDTH * -1
-			}, callback)
-	}
+	var Timer = Timer || {};
 
-	function prevAnimateLast(_index, callback){
-		$container.animate({
-			left:_index * WIDTH * -1
-		},function(){
-			$container.css({
-				left: $maxLength * WIDTH * -1
-			});
-			index = $maxLength;
-			callback();
-		})
-	}
+	Timer = (function() {
+		var _timer = {},
+			_isStop = false,
+			_setIsStop = function() {};
 
-	function next(callback){
-		index = index + 1;
-		if(index == $maxLength + 1){
-			nextAnimateLast(index, callback);
-		}else if(index < $maxLength + 1){
-			nextAnimate(index, callback);
-		}
-	}
+		_setIsStop = function(isStop) {
+			_isStop = isStop;
+		};
 
-	function nextAnimate(index, callback){
-		$container.animate({
-			left:index * WIDTH * -1
-		}, callback)
-	}
-
-	function nextAnimateLast(_index, callback){
-		// index = $maxLength + 1;
-		$container.animate({
-			left:_index * WIDTH * -1
-		},function(){
-			var firstImg = _index - $maxLength;
-			$container.css({
-				left: firstImg * WIDTH * -1
-			});
-			index = firstImg;
-			callback();
-		})
-	}
-
-	function startTime() {
-		var _timer = setInterval(function() {
-			next();
-		}, 3000);
+		_timer = {
+			openTimer: function() {
+				_setIsStop(false);
+				return this;
+			},
+			closeTimer: function() {
+				_setIsStop(true);
+				return this;
+			},
+			loop: function(actions, looptime) {
+				var _loop = this['loop'];
+				if(!_isStop) {
+					setTimeout(actions, looptime);
+				}
+				return this;
+			}
+		};
 		return _timer;
-	}
+	})();
 
-	function stopTime(timer) {
-		clearInterval(timer);
-	}
+	var actions = function () {
+		next(nextAnimatComplete);
+	};
 
-
-	function prevAnimatComplete() {}
-
-	function nextAnimatComplete() {}
-
-	// var _onSliderAddComplete = function(e) {
-
-	// };
 
 	init = function() {
-		// timer = startTime();
-		$container.css({
-			left: index * WIDTH * -1
+		Timer.loop(actions, 3000);
+
+		_container.css({
+			left: current * WIDTH * -1
 		});
 	};
+
+	function startLoop() {
+		setTimeout(function() {
+			Timer.openTimer().loop(actions, 3000)
+		}, 5000);
+	}
 
 	init();
 
 
-
-	$prev.on('click', function() {
-		// stopTime()
+	_prev.on('click', function() {
 		prev(prevAnimatComplete);
+		Timer.closeTimer();
+		startLoop();
 	});
-	$next.on('click', function() {
-		// stopTime();
+	_next.on('click', function() {
 		next(nextAnimatComplete);
+		Timer.closeTimer();
+		startLoop();
 	});
+	// _container.on('hover'), function(){
+	// 	stopTime();
+	// }
 	// $container.on(Events['SLIDER_ADD_COUNT'], _onSliderAddComplete)
 
 	// $start.on('click',function(){
